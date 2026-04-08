@@ -13,18 +13,10 @@ jobs:
         openstack_version: ["master"]
         ubuntu_version: ["22.04"]
         include:
-          - name: "master-22.04"
-            openstack_version: "master"
-            ubuntu_version: "22.04"
-            additional_services: "openstack-cli-server"
           - name: "master-24.04"
             openstack_version: "master"
             ubuntu_version: "24.04"
             additional_services: "openstack-cli-server"
-          - name: "flamingo-22.04"
-            openstack_version: "stable/2025.2"
-            ubuntu_version: "22.04"
-            additional_services: ""
           - name: "flamingo-24.04"
             openstack_version: "stable/2025.2"
             ubuntu_version: "24.04"
