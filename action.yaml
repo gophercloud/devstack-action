@@ -49,7 +49,7 @@ runs:
       run: sudo apt-get purge -y python3-simplejson python3-pyasn1-modules postgresql* || true
       shell: bash
     - name: Checkout Devstack
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ inputs.branch }}
         repository: openstack/devstack
