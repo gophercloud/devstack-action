@@ -53,7 +53,7 @@ jobs:
     name: A job to deploy devstack with defaults
     steps:
       - name: Checkout devstack-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy devstack
         uses: ./
         with:
