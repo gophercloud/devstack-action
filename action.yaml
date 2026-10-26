@@ -13,6 +13,9 @@ inputs:
   log_dir:
     description: 'Directory for logs'
     default: '/tmp/devstack-logs'
+  enable_workaround_azure_mirror:
+    description: 'Enable or disable workaround for stalled Azure APT mirror downloads'
+    default: 'true'
   enable_workaround_docker_io:
     description: 'Enable or disable workaround for docker.io'
     default: 'true'
@@ -24,6 +27,18 @@ runs:
   steps:
     - name: Install python pip
       run: python3 -m pip install --upgrade pip
+      shell: bash
+    - name: Workaround for Azure APT mirror
+      if: ${{ inputs.enable_workaround_azure_mirror == 'true' }}
+      run: |
+        # Slow Azure mirror downloads can exhaust the job timeout.
+        # See https://github.com/actions/runner-images/issues/14823
+        if [[ -f /etc/apt/apt-mirrors.txt ]]; then
+          sudo sed -i '/azure\.archive\.ubuntu\.com/d' /etc/apt/apt-mirrors.txt
+          cat /etc/apt/apt-mirrors.txt
+        else
+          echo "No APT mirror list found; skipping Azure mirror workaround."
+        fi
       shell: bash
     - name: Update APT cache
       run: sudo apt-get update
