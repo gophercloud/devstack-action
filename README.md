@@ -14,6 +14,18 @@ reference the Azure mirror directly are not changed.
 Set `enable_workaround_azure_mirror: 'false'` in the step's `with:` block to
 disable the workaround.
 
+## CirrOS prefetch
+
+By default, the action downloads the CirrOS `uec.tar.gz` and `disk.img` images
+from GitHub Releases into `devstack/files/` before running devstack. Devstack
+skips its own download when the file is already there. This avoids timeouts
+from `download.cirros-cloud.net`, which the Ironic devstack plugin hardcodes.
+The version comes from `CIRROS_VERSION` in `conf_overrides`, or from devstack's
+`stackrc`. A failed download only logs a warning, and devstack then downloads
+the image itself.
+
+Set `prefetch_cirros: 'false'` in the step's `with:` block to disable it.
+
 ## Usage
 
 Example of Github Action step:

@@ -22,6 +22,9 @@ inputs:
   force:
     description: 'Allow running devstack on unsupported distro'
     default: 'no'
+  prefetch_cirros:
+    description: 'Download the CirrOS images from GitHub Releases before running devstack'
+    default: 'true'
 runs:
   using: "composite"
   steps:
@@ -96,6 +99,32 @@ runs:
         cat << EOF_CONF_OVERRIDES >> local.conf
         ${{ inputs.conf_overrides }}
         EOF_CONF_OVERRIDES
+      working-directory: ./devstack
+      shell: bash
+    - name: Prefetch CirrOS images
+      if: ${{ inputs.prefetch_cirros == 'true' }}
+      run: |
+        # The Ironic devstack plugin hardcodes http://download.cirros-cloud.net,
+        # which often times out from GitHub runners. Devstack skips its own
+        # download when the file is already in files/.
+        conf_value() { sed -nE "s/^$1=\"?([^\"]+)\"?\$/\1/p" local.conf | tail -1; }
+        version=$(conf_value CIRROS_VERSION)
+        version=${version:-$(sed -nE 's/^CIRROS_VERSION=\$\{CIRROS_VERSION:-"?([^"}]+)"?\}.*/\1/p' stackrc)}
+        arch=$(conf_value CIRROS_ARCH)
+        arch=${arch:-$(uname -m)}
+        mkdir -p files
+        for name in "cirros-${version}-${arch}-uec.tar.gz" "cirros-${version}-${arch}-disk.img"; do
+          [[ -s "files/${name}" ]] && continue
+          # Download to a temporary name so devstack never sees a partial file.
+          if curl -fsSL --retry 5 --retry-all-errors --connect-timeout 30 \
+              -o "files/${name}.tmp" \
+              "https://github.com/cirros-dev/cirros/releases/download/${version}/${name}"; then
+            mv "files/${name}.tmp" "files/${name}"
+          else
+            rm -f "files/${name}.tmp"
+            echo "::warning::Could not prefetch ${name}; devstack will download it itself."
+          fi
+        done
       working-directory: ./devstack
       shell: bash
     - name: Dump local.conf
